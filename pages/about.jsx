@@ -1,7 +1,9 @@
+import Container from "../components/Container"
+
 export default function About() {
   return (
-    <div>
+    <Container>
       <p>This is the about page</p>
-    </div>
-  );
+    </Container>
+  )
 }
