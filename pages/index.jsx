@@ -1,33 +1,53 @@
-import Link from "next/link"
 import fetch from "isomorphic-unfetch"
-import Container from "../components/Container"
+import useSWR from "swr"
+import { css } from "@emotion/core"
+import { useRouter } from "next/router"
 
-const Index = props => {
+function fetcher(url) {
+  return fetch(url).then(r => r.json())
+}
+
+export default function Index() {
+  const { query } = useRouter()
+  const { data, error } = useSWR(
+    `/api/randomQuote${query.author ? "?author=" + query.author : ""}`,
+    fetcher
+  )
+  const author = data && data.author
+  let quote = data && data.quote
+  if (!data) quote = "Loading ..."
+  if (error) quote = "Failed to fetch the quote."
+
   return (
-    <Container>
-      <h1>Batman TV Shows</h1>
-      <ul>
-        {props.shows.map(show => {
-          return (
-            <li key={show.id}>
-              <Link href="/p/[id]" as={`/p/${show.id}`}>
-                <a>{show.name}</a>
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
-    </Container>
+    <main
+      css={css`
+        width: 90%;
+        max-width: 900px;
+        margin: 300px auto;
+        text-align: center;
+      `}
+    >
+      <div
+        css={css`
+          font-family: cursive;
+          color: #e243de;
+          font-size: 24px;
+          padding-bottom: 10px;
+        `}
+      >
+        {quote}
+      </div>
+      {author && (
+        <span
+          css={css`
+            font-family: sans-serif;
+            color: #559834;
+            font-size: 20px;
+          `}
+        >
+          - {author}
+        </span>
+      )}
+    </main>
   )
 }
-
-Index.getInitialProps = async function() {
-  const res = await fetch("https://api.tvmaze.com/search/shows?q=batman")
-  const data = await res.json()
-  console.log(data)
-  return {
-    shows: data.map(entry => entry.show)
-  }
-}
-
-export default Index
